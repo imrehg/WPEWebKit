@@ -1331,7 +1331,10 @@ unsigned MediaPlayerPrivateGStreamerBase::videoDecodedByteCount() const
 #if ENABLE(ENCRYPTED_MEDIA)
 void MediaPlayerPrivateGStreamerBase::cdmInstanceAttached(const CDMInstance& instance)
 {
-    ASSERT(!m_cdmInstance);
+    // Aside from new media keys being attached, this callback can fire for a number of unrelated reasons
+    // due to lots of different calls to mediaPlayerEngineUpdated. Do not ASSERT.
+    if (m_cdmInstance == &instance)
+        return;
     m_cdmInstance = &instance;
     GST_DEBUG("CDM instance %p set", m_cdmInstance.get());
     m_protectionCondition.notifyAll();
