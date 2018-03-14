@@ -19,7 +19,8 @@
 
 #pragma once
 
-
+#include "GRefPtrGStreamer.h"
+#include "GUniquePtrGStreamer.h"
 #include <gst/gst.h>
 #include <gst/video/video-format.h>
 #include <gst/video/video-info.h>
