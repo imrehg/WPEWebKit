@@ -1395,6 +1395,16 @@ void MediaPlayerPrivateGStreamerBase::dispatchDecryptionKey(GstBuffer* buffer)
     GST_TRACE("emitted decryption cipher key on pipeline, event handled %s, need to resend credentials %s", boolForPrinting(eventHandled), boolForPrinting(m_needToResendCredentials));
 }
 
+void MediaPlayerPrivateGStreamerBase::dispatchCDMInstance()
+{
+    // Dispatch the CDMInstance to the GStreamer pipeline playback.
+    if (m_cdmInstance) {
+        m_player->attemptToDecryptWithInstance(*m_cdmInstance.get());
+    } else {
+        GST_ERROR("no cdm instance attached yet");
+    }
+}
+
 #if USE(OPENCDM)
 void MediaPlayerPrivateGStreamerBase::mapProtectionEventToInitData(const InitData& initData, GstEventSeqNum eventId)
 {

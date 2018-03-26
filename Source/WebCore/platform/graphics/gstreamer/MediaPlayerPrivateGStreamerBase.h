@@ -151,6 +151,7 @@ public:
     void handleProtectionEvent(GstEvent*);
     void attemptToDecryptWithLocalInstance();
     void attemptToDecryptWithInstance(const CDMInstance&) override;
+    void dispatchCDMInstance();
 
     using InitData = String;
 #if USE(OPENCDM)
