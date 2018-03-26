@@ -151,6 +151,12 @@ if (ENABLE_ENCRYPTED_MEDIA)
         ${LIBGCRYPT_LIBRARIES} -lgpg-error
     )
 
+    list(APPEND WebCore_LIBRARIES ${WIDEVINE_LIBRARIES})
+    list(APPEND WebCore_INCLUDE_DIRECTORIES ${WIDEVINE_INCLUDE_DIR})
+    list(APPEND WebCore_SOURCES
+            platform/graphics/gstreamer/eme/CDMWidevine.cpp
+    )
+
     if (ENABLE_OPENCDM)
         list(APPEND WebCore_SOURCES
             platform/graphics/gstreamer/eme/CDMOpenCDM.cpp

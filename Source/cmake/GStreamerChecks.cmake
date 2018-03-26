@@ -45,6 +45,7 @@ if (ENABLE_VIDEO OR ENABLE_WEB_AUDIO)
 
     if (ENABLE_ENCRYPTED_MEDIA)
       find_package(LibGcrypt REQUIRED)
+      find_package(Widevine REQUIRED)
       if (ENABLE_OPENCDM)
         find_package(OpenCDM REQUIRED)
         add_definitions(-DUSE_OPENCDM=1)
