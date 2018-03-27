@@ -264,8 +264,15 @@ static GstFlowReturn webkitMediaCommonEncryptionDecryptTransformInPlace(GstBaseT
 
     value = gst_structure_get_value(protectionMeta->info, "kid");
     GstBuffer* keyIDBuffer = nullptr;
-    if (value)
+    if (value) {
         keyIDBuffer = gst_value_get_buffer(value);
+        GstMapInfo mapInfo;
+        if (!gst_buffer_map(keyIDBuffer, &mapInfo, GST_MAP_READ)) {
+            GST_WARNING("cannot map key id buffer data");
+            return GST_FLOW_NOT_SUPPORTED;
+        }
+        GST_MEMDUMP("GGG: keyID", reinterpret_cast<const uint8_t*>(mapInfo.data), mapInfo.size);
+    }
 
     WebKitMediaCommonEncryptionDecryptClass* klass = WEBKIT_MEDIA_CENC_DECRYPT_GET_CLASS(self);
     if (!klass->setupCipher(self, keyIDBuffer)) {
