@@ -104,9 +104,6 @@ private:
     void setAppsrcDataLeavingProbe();
     void demuxerNoMorePads();
     void consumeAppSinkAvailableSamples();
-#if ENABLE(ENCRYPTED_MEDIA)
-    void dispatchPendingDecryptionStructures();
-#endif
 
     Ref<MediaSourceClientGStreamerMSE> m_mediaSourceClient;
     Ref<SourceBufferPrivateGStreamer> m_sourceBufferPrivate;
@@ -167,9 +164,6 @@ private:
     RefPtr<WebCore::TrackPrivateBase> m_track;
 
     GRefPtr<GstBuffer> m_pendingBuffer;
-#if ENABLE(ENCRYPTED_MEDIA)
-    Vector<GUniquePtr<GstStructure>> m_pendingDecryptionStructures;
-#endif
 };
 
 } // namespace WebCore.
