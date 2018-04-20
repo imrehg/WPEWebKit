@@ -215,6 +215,10 @@ static GstFlowReturn webkitMediaCommonEncryptionDecryptTransformInPlace(GstBaseT
             GST_ERROR_OBJECT(self, "can't process key requests in less than PAUSED state");
             return GST_FLOW_NOT_SUPPORTED;
         }
+
+        GST_DEBUG_OBJECT(self, "posting cdm instance needed");
+        gst_element_post_message(GST_ELEMENT(self), gst_message_new_element(GST_OBJECT(self), gst_structure_new_empty("drm-cdm-instance-needed")));
+
         if (!priv->m_condition.waitFor(priv->m_mutex, WEBCORE_GSTREAMER_EME_LICENSE_KEY_RESPONSE_TIMEOUT, [priv] { return priv->m_keyReceived; })) {
             GST_ERROR_OBJECT(self, "key not available");
             return GST_FLOW_NOT_SUPPORTED;
@@ -349,28 +353,6 @@ static gboolean webkitMediaCommonEncryptionDecryptSinkEventHandler(GstBaseTransf
     gboolean result = FALSE;
 
     switch (GST_EVENT_TYPE(event)) {
-    case GST_EVENT_PROTECTION: {
-        const char* systemId = nullptr;
-
-        gst_event_parse_protection(event, &systemId, nullptr, nullptr);
-        GST_TRACE_OBJECT(self, "received protection event %u for %s", GST_EVENT_SEQNUM(event), systemId);
-
-        if (!g_strcmp0(systemId, klass->protectionSystemId)) {
-            LockHolder locker(priv->m_mutex);
-            priv->m_pendingProtectionEvent = event;
-            if (priv->m_cdmInstance)
-                webkitMediaCommonEncryptionDecryptProcessPendingProtectionEvent(self);
-            else {
-                GST_DEBUG_OBJECT(self, "protection event buffer kept for later because we have no CDMInstance yet, requesting");
-                gst_element_post_message(GST_ELEMENT(self), gst_message_new_element(GST_OBJECT(self), gst_structure_new_empty("drm-cdm-instance-needed")));
-            }
-        } else
-            GST_TRACE_OBJECT(self, "protection event for a different key system");
-
-        result = TRUE;
-        gst_event_unref(event);
-        break;
-    }
     case GST_EVENT_CUSTOM_DOWNSTREAM_OOB: {
         const GstStructure* structure = gst_event_get_structure(event);
         if (gst_structure_has_name(structure, "drm-cdm-instance-attached")) {

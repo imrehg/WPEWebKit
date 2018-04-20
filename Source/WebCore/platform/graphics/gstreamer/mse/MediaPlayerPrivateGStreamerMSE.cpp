@@ -1009,8 +1009,7 @@ MediaTime MediaPlayerPrivateGStreamerMSE::maxMediaTimeSeekable() const
 #if ENABLE(ENCRYPTED_MEDIA)
 void MediaPlayerPrivateGStreamerMSE::dispatchDecryptionStructure(GUniquePtr<GstStructure>&& structure)
 {
-    for (const auto& it : m_appendPipelinesMap)
-        it.value->dispatchDecryptionStructure(GUniquePtr<GstStructure>(gst_structure_copy(structure.get())));
+    m_playbackPipeline->dispatchDecryptionStructure(WTFMove(structure));
 }
 #endif
 

@@ -181,7 +181,9 @@ void PlaybackPipeline::attachTrack(RefPtr<SourceBufferPrivateGStreamer> sourceBu
 
     GUniquePtr<gchar> parserBinName(g_strdup_printf("streamparser%u", padId));
 
-    if (!g_strcmp0(mediaType, "video/x-h264")) {
+    if (areEncryptedCaps(caps)) {
+        GST_DEBUG_OBJECT(webKitMediaSrc, "It's an encrypted content, the parser plugins will be auto plugged by the decodebin");
+    } else if (!g_strcmp0(mediaType, "video/x-h264")) {
         GRefPtr<GstCaps> filterCaps = adoptGRef(gst_caps_new_simple("video/x-h264", "alignment", G_TYPE_STRING, "au", nullptr));
         GstElement* capsfilter = gst_element_factory_make("capsfilter", nullptr);
         g_object_set(capsfilter, "caps", filterCaps.get(), nullptr);
@@ -331,6 +333,25 @@ void PlaybackPipeline::reattachTrack(RefPtr<SourceBufferPrivateGStreamer> source
     if (signal != -1)
         g_signal_emit(G_OBJECT(stream->parent), webKitMediaSrcSignals[signal], 0, nullptr);
 }
+
+#if ENABLE(ENCRYPTED_MEDIA)
+void PlaybackPipeline::dispatchDecryptionStructure(GUniquePtr<GstStructure>&& structure)
+{
+    WebKitMediaSrcPrivate* priv = m_webKitMediaSrc->priv;
+    Vector<GstAppSrc*> appsrcs;
+    GST_OBJECT_LOCK(m_webKitMediaSrc.get());
+    for (Stream* stream : priv->streams) {
+        if (stream->appsrc)
+            appsrcs.append(GST_APP_SRC(stream->appsrc));
+    }
+    GST_OBJECT_UNLOCK(m_webKitMediaSrc.get());
+
+    for (GstAppSrc* appsrc : appsrcs) {
+        GST_TRACE("dispatching key to playback pipeline %p", this);
+        gst_element_send_event((GstElement*)appsrc, gst_event_new_custom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, gst_structure_copy(structure.get())));
+    }
+}
+#endif
 
 void PlaybackPipeline::notifyDurationChanged()
 {
