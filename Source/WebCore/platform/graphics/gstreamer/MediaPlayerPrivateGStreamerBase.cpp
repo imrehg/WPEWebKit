@@ -384,6 +384,11 @@ bool MediaPlayerPrivateGStreamerBase::handleSyncMessage(GstMessage* message)
         return handleSyncNeedContextMessage(message);
 #endif
 
+#if ENABLE(ENCRYPTED_MEDIA)
+    if (GST_MESSAGE_TYPE(message) == GST_MESSAGE_ELEMENT)
+        return handleSyncElementMessage(message);
+#endif
+
     return false;
 }
 
@@ -403,6 +408,19 @@ bool MediaPlayerPrivateGStreamerBase::handleSyncNeedContextMessage(GstMessage* m
     return false;
 }
 #endif // USE(GSTREAMER_GL)
+
+#if ENABLE(ENCRYPTED_MEDIA)
+bool MediaPlayerPrivateGStreamerBase::handleSyncElementMessage(GstMessage* message)
+{
+    const GstStructure* structure = gst_message_get_structure(message);
+    if (gst_structure_has_name(structure, "drm-initialization-data-encountered")) {
+        GST_DEBUG("drm-initialization-data-encountered message from %s", GST_MESSAGE_SRC_NAME(message));
+        handleProtectionStructure(structure);
+        return true;
+    }
+    return false;
+}
+#endif
 
 #if USE(GSTREAMER_GL)
 GstContext* MediaPlayerPrivateGStreamerBase::requestGLContext(const char* contextType)
@@ -1265,8 +1283,6 @@ unsigned MediaPlayerPrivateGStreamerBase::videoDecodedByteCount() const
 #if ENABLE(ENCRYPTED_MEDIA)
 void MediaPlayerPrivateGStreamerBase::handleProtectionStructure(const GstStructure* structure)
 {
-    ASSERT(isMainThread());
-
     // FIXME: Inform that we are waiting for a key.
     GUniqueOutPtr<char> keySystemUUID;
     GRefPtr<GstBuffer> data;

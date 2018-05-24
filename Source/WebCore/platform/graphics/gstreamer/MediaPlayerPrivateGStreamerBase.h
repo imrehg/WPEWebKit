@@ -219,6 +219,7 @@ protected:
     void dispatchDecryptionKey(GstBuffer*);
     void attemptToDecryptWithLocalInstance();
     virtual void dispatchDecryptionStructure(GUniquePtr<GstStructure>&&);
+    bool handleSyncElementMessage(GstMessage*);
 #endif
 
     enum MainThreadNotification {
