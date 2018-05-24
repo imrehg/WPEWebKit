@@ -164,7 +164,7 @@ public:
 
     GstElement* pipeline() const { return m_pipeline.get(); }
 
-    virtual bool handleSyncMessage(GstMessage*);
+    bool handleSyncMessage(GstMessage*);
 
 protected:
     MediaPlayerPrivateGStreamerBase(MediaPlayer*);
@@ -181,6 +181,7 @@ protected:
     GstGLContext* gstGLContext() const { return m_glContext.get(); }
     GstGLDisplay* gstGLDisplay() const { return m_glDisplay.get(); }
     void ensureGLVideoSinkContext();
+    bool handleSyncNeedContextMessage(GstMessage*);
 #endif
 
 #if USE(TEXTURE_MAPPER_GL)

@@ -378,23 +378,31 @@ void MediaPlayerPrivateGStreamerBase::clearSamples()
 bool MediaPlayerPrivateGStreamerBase::handleSyncMessage(GstMessage* message)
 {
     UNUSED_PARAM(message);
-    if (GST_MESSAGE_TYPE(message) != GST_MESSAGE_NEED_CONTEXT)
-        return false;
 
+#if USE(GSTREAMER_GL)
+    if (GST_MESSAGE_TYPE(message) == GST_MESSAGE_NEED_CONTEXT)
+        return handleSyncNeedContextMessage(message);
+#endif
+
+    return false;
+}
+
+#if USE(GSTREAMER_GL)
+bool MediaPlayerPrivateGStreamerBase::handleSyncNeedContextMessage(GstMessage* message)
+{
     const gchar* contextType;
     gst_message_parse_context_type(message, &contextType);
     GST_DEBUG("Handling %s need-context message for %s", contextType, GST_MESSAGE_SRC_NAME(message));
 
-#if USE(GSTREAMER_GL)
     GRefPtr<GstContext> elementContext = adoptGRef(requestGLContext(contextType));
     if (elementContext) {
         gst_element_set_context(GST_ELEMENT(message->src), elementContext.get());
         return true;
     }
-#endif // USE(GSTREAMER_GL)
 
     return false;
 }
+#endif // USE(GSTREAMER_GL)
 
 #if USE(GSTREAMER_GL)
 GstContext* MediaPlayerPrivateGStreamerBase::requestGLContext(const char* contextType)

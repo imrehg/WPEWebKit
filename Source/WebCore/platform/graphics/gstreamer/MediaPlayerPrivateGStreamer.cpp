@@ -2427,11 +2427,6 @@ bool MediaPlayerPrivateGStreamer::canSaveMediaData() const
     return false;
 }
 
-bool MediaPlayerPrivateGStreamer::handleSyncMessage(GstMessage* message)
-{
-    return MediaPlayerPrivateGStreamerBase::handleSyncMessage(message);
-}
-
 }
 
 #endif // USE(GSTREAMER)
