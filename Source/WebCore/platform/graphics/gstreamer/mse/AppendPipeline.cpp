@@ -241,7 +241,7 @@ AppendPipeline::AppendPipeline(Ref<MediaSourceClientGStreamerMSE> mediaSourceCli
     g_signal_connect(m_bus.get(), "sync-message::need-context", G_CALLBACK(appendPipelineNeedContextMessageCallback), this);
     g_signal_connect(m_bus.get(), "message::application", G_CALLBACK(appendPipelineApplicationMessageCallback), this);
 #if ENABLE(ENCRYPTED_MEDIA)
-    g_signal_connect(m_bus.get(), "message::element", G_CALLBACK(appendPipelineElementMessageCallback), this);
+    g_signal_connect(m_bus.get(), "sync-message::element", G_CALLBACK(appendPipelineElementMessageCallback), this);
 #endif
     g_signal_connect(m_bus.get(), "message::state-changed", G_CALLBACK(appendPipelineStateChangeMessageCallback), this);
 
@@ -466,8 +466,6 @@ void AppendPipeline::demuxerNoMorePads()
 #if ENABLE(ENCRYPTED_MEDIA)
 void AppendPipeline::handleElementMessage(GstMessage* message)
 {
-    ASSERT(WTF::isMainThread());
-
     const GstStructure* structure = gst_message_get_structure(message);
     GST_TRACE("%s message from %s", gst_structure_get_name(structure), GST_MESSAGE_SRC_NAME(message));
     if (m_playerPrivate) {
