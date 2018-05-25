@@ -1171,12 +1171,6 @@ void MediaPlayerPrivateGStreamer::handleMessage(GstMessage* message)
                 m_buffering = false;
                 updateStates();
             }
-#if ENABLE(ENCRYPTED_MEDIA)
-            else if (gst_structure_has_name(structure, "drm-cdm-instance-needed")) {
-                GST_DEBUG("drm-cdm-instance-needed message from %s", GST_MESSAGE_SRC_NAME(message));
-                dispatchLocalCDMInstance();
-            }
-#endif
         }
         break;
 #if ENABLE(VIDEO_TRACK)

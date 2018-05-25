@@ -148,7 +148,7 @@ public:
     void cdmInstanceDetached(const CDMInstance&) override;
     void attemptToDecryptWithInstance(const CDMInstance&) final;
     void handleProtectionStructure(const GstStructure*);
-    void dispatchLocalCDMInstance();
+    void dispatchLocalCDMInstance(bool shouldLock = true);
 #endif
 
     static bool supportsKeySystem(const String& keySystem, const String& mimeType);
@@ -279,6 +279,7 @@ protected:
 #endif
 
 #if ENABLE(ENCRYPTED_MEDIA)
+    Lock m_protectionMutex;
     RefPtr<const CDMInstance> m_cdmInstance;
     Vector<GstEventSeqNum> m_reportedProtectionEvents;
     bool m_needToResendCredentials { false };

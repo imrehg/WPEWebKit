@@ -418,6 +418,11 @@ bool MediaPlayerPrivateGStreamerBase::handleSyncElementMessage(GstMessage* messa
         handleProtectionStructure(structure);
         return true;
     }
+    if (gst_structure_has_name(structure, "drm-cdm-instance-needed")) {
+        GST_DEBUG("drm-cdm-instance-needed message from %s", GST_MESSAGE_SRC_NAME(message));
+        dispatchLocalCDMInstance();
+        return true;
+    }
     return false;
 }
 #endif
@@ -1314,14 +1319,15 @@ void MediaPlayerPrivateGStreamerBase::handleProtectionStructure(const GstStructu
 void MediaPlayerPrivateGStreamerBase::cdmInstanceAttached(const CDMInstance& instance)
 {
     ASSERT(isMainThread());
+    LockHolder lock(m_protectionMutex);
     GST_DEBUG("CDM instance %p set", &instance);
     m_cdmInstance = &instance;
-    dispatchLocalCDMInstance();
+    dispatchLocalCDMInstance(false);
 }
 
-void MediaPlayerPrivateGStreamerBase::dispatchLocalCDMInstance()
+void MediaPlayerPrivateGStreamerBase::dispatchLocalCDMInstance(bool shouldLock)
 {
-    ASSERT(isMainThread());
+    LockHolder lock(shouldLock ? &m_protectionMutex : nullptr);
 
     if (!m_cdmInstance) {
         GST_DEBUG("no CDM instance yet, not dispatching anything");
@@ -1335,6 +1341,7 @@ void MediaPlayerPrivateGStreamerBase::dispatchLocalCDMInstance()
 void MediaPlayerPrivateGStreamerBase::cdmInstanceDetached(const CDMInstance& instance)
 {
     ASSERT(isMainThread());
+    LockHolder lock(m_protectionMutex);
     ASSERT(m_cdmInstance.get() == &instance);
     GST_DEBUG("detaching CDM instance %p, dispatching event", m_cdmInstance.get());
     m_cdmInstance = nullptr;
@@ -1344,8 +1351,11 @@ void MediaPlayerPrivateGStreamerBase::cdmInstanceDetached(const CDMInstance& ins
 void MediaPlayerPrivateGStreamerBase::attemptToDecryptWithInstance(const CDMInstance& instance)
 {
     ASSERT(isMainThread());
+#ifndef NDEBUG
+    LockHolder lock(m_protectionMutex);
     ASSERT(m_cdmInstance.get() == &instance);
     GST_TRACE("instance %p, current stored %p", &instance, m_cdmInstance.get());
+#endif
     attemptToDecryptWithLocalInstance();
 }
 
