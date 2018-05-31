@@ -1354,7 +1354,9 @@ void MediaPlayerPrivateGStreamerBase::attemptToDecryptWithInstance(const CDMInst
 #ifndef NDEBUG
     LockHolder lock(m_protectionMutex);
     ASSERT(m_cdmInstance.get() == &instance);
-    GST_TRACE("instance %p, current stored %p", &instance, m_cdmInstance.get());
+    GST_TRACE("instance %p, current stored %p, dispatching", &instance, m_cdmInstance.get());
+#else
+    GST_TRACE("dispatching");
 #endif
     attemptToDecryptWithLocalInstance();
 }
