@@ -65,7 +65,11 @@ bool WebInspectorServer::platformResourceForPath(const String& path, Vector<char
     loadResourcesIfNeeded();
 
     // Point the default path to a formatted page that queries the page list and display them.
-    CString resourcePath = makeString("/org/wpe/inspector/UserInterface", (path == "/" ? "/inspectorPageIndex.html" : path)).utf8();
+    // Point the default path to a formatted page that queries the page list and display them.
+    CString resourcePath = path == "/" || path == "/inspectorPageIndex.html"
+      ? makeString("/org/wpe/inspector/UserInterface", "/inspectorPageIndex.html").utf8()
+      : makeString("/org/webkitgtk/inspector/UserInterface", path).utf8();
+
     if (resourcePath.isNull())
         return false;
 
